@@ -1,0 +1,17 @@
+---
+- name: Create AWS ECR Repository
+  hosts: localhost
+  connection: local
+  gather_facts: false
+
+  tasks:
+    - name: Create the repo
+      community.aws.ecs_ecr:
+        name: my-python-app
+        region: eu-central-1
+        state: present
+      register: ecr_result
+
+    - name: Print the URI
+      debug:
+        msg: "ECR URL is {{ ecr_result.repository.repositoryUri }}"
