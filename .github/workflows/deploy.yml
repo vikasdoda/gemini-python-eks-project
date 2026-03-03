@@ -1,0 +1,35 @@
+name: Build and Push to ECR
+
+# 1. Trigger: When do we run? 
+on:
+  push:
+    branches: [ "main" ] # Run every time we push to the main branch
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest # 2. The Machine: Use a fresh Linux VM provided by GitHub
+
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v3 # 3. Copy: Download your code into the VM
+
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v2 # 4. Login: Use the keys we saved in Step 1
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: eu-central-1
+
+    - name: Login to Amazon ECR
+      id: login-ecr
+      uses: aws-actions/amazon-ecr-login@v1 # 5. Authenticate: Get permission to push to ECR
+
+    - name: Build, tag, and push image to Amazon ECR
+      env:
+        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        ECR_REPOSITORY: my-python-app # Make sure this matches your ECR name!
+        IMAGE_TAG: latest
+      run: |
+        # 6. The "Magic": Build the Docker image, name it, and push it to the cloud
+        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+        docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
