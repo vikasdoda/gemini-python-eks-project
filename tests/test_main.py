@@ -1,9 +1,11 @@
 from fastapi.testclient import TestClient
-from app.main import app # Import your FastAPI app
+from main import app 
 
 client = TestClient(app)
 
 def test_read_main():
     response = client.get("/")
     assert response.status_code == 200
-    assert response.json() == {"message": "Hello World"} # Adjust this to match your actual code
+    # Update this to match your new return statement:
+    assert response.json()["status"] == "Active"
+    assert "environment" in response.json()
