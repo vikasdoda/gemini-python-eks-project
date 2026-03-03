@@ -1,20 +1,38 @@
 name: Build and Push to ECR
 
-# 1. Trigger: When do we run? 
 on:
   push:
-    branches: [ "main" ] # Run every time we push to the main branch
+    branches: [ "main" ]
 
 jobs:
   deploy:
-    runs-on: ubuntu-latest # 2. The Machine: Use a fresh Linux VM provided by GitHub
+    runs-on: ubuntu-latest
 
     steps:
     - name: Checkout Code
-      uses: actions/checkout@v3 # 3. Copy: Download your code into the VM
+      uses: actions/checkout@v3
+
+    # --- THIS IS THE TEST STAGE WE ARE ADDING ---
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install pytest httpx fastapi 
+        # Also install any specific requirements your app needs
+        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+
+    - name: Run Pytest
+      run: |
+        # GitHub will look for the /tests folder and execute test_main.py
+        pytest 
+    # --- END OF TEST STAGE ---
 
     - name: Configure AWS Credentials
-      uses: aws-actions/configure-aws-credentials@v2 # 4. Login: Use the keys we saved in Step 1
+      uses: aws-actions/configure-aws-credentials@v2
       with:
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -22,14 +40,13 @@ jobs:
 
     - name: Login to Amazon ECR
       id: login-ecr
-      uses: aws-actions/amazon-ecr-login@v1 # 5. Authenticate: Get permission to push to ECR
+      uses: aws-actions/amazon-ecr-login@v1
 
-    - name: Build, tag, and push image to Amazon ECR
+    - name: Build and Push
       env:
         ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-        ECR_REPOSITORY: my-python-app # Make sure this matches your ECR name!
+        ECR_REPOSITORY: my-python-app
         IMAGE_TAG: latest
       run: |
-        # 6. The "Magic": Build the Docker image, name it, and push it to the cloud
         docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
         docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
