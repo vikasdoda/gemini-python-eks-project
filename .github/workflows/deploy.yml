@@ -28,7 +28,7 @@ jobs:
     - name: Run Pytest
       run: |
         # GitHub will look for the /tests folder and execute test_main.py
-        pytest 
+        python -m pytest 
     # --- END OF TEST STAGE ---
 
     - name: Configure AWS Credentials
