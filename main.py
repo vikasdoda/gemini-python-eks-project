@@ -1,13 +1,11 @@
-from fastapi import FastAPI
-import os
+from fastapi.testclient import TestClient
+from app.main import app 
 
-app = FastAPI()
+client = TestClient(app)
 
-@app.get("/")
-def read_root():
-    return {"status": "Active", "environment": os.getenv("ENV", "Development")}
-
-@app.get("/health")
-def health_check():
-    # This is crucial for Kubernetes later
-    return {"status": "healthy"}
+def test_read_main():
+    response = client.get("/")
+    assert response.status_code == 200
+    # Update this to match your new return statement:
+    assert response.json()["status"] == "Active"
+    assert "environment" in response.json()
