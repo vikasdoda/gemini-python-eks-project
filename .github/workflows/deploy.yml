@@ -82,6 +82,10 @@ jobs:
         mkdir -p ~/.kube
         echo "${{ secrets.KUBE_CONFIG_DATA }}" | base64 -d > ~/.kube/config
         chmod 600 ~/.kube/config
+        # Step C: The "Expert" Fix
+        # This tells the kubeconfig to use the 'aws' command directly
+        # without looking for specific local profiles.
+        aws eks update-kubeconfig --region eu-central-1 --name devops-expert-cluster
 
     - name: Deploy to EKS
       run: |
