@@ -50,7 +50,7 @@ jobs:
       env:
         ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
         ECR_REPOSITORY: my-python-app
-        IMAGE_TAG: latest
+        IMAGE_TAG: ${{ github.sha }}
       run: |
         docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
         docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
@@ -94,4 +94,4 @@ jobs:
         # --set image.tag=latest ensures we pull the brand new image we just pushed.
         helm upgrade --install my-python-app ./my-python-chart \
           --set image.repository=${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.eu-central-1.amazonaws.com/my-python-app \
-          --set image.tag=latest
+          --set image.tag=${{ github.sha }}
